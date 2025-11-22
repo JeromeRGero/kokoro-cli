@@ -63,8 +63,10 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 #### 5. Install Core Dependencies
 
 ```powershell
-pip install soundfile huggingface_hub loguru transformers scipy
+pip install soundfile sounddevice huggingface_hub loguru transformers scipy
 ```
+
+**Note**: `sounddevice` enables audio playback directly in the terminal without opening media player windows.
 
 **Time estimate**: 2-3 minutes
 
@@ -162,42 +164,72 @@ python kokoro-tts.py --echo --file document.txt
 python kokoro-tts.py --help
 ```
 
-### Creating a Shortcut
+### Creating a Global Command
 
-To avoid typing the full path each time, add this to your PowerShell profile:
+To use `tts` from anywhere (recommended!), set up a PowerShell function:
 
-#### Step 1: Open your profile
+#### Automatic Setup (Copy & Paste)
 
 ```powershell
+# Create profile if it doesn't exist
+if (!(Test-Path $PROFILE)) {
+    New-Item -Path $PROFILE -Type File -Force
+}
+
+# Add tts function (adjust path if you installed elsewhere)
+Add-Content -Path $PROFILE -Value "`n# Kokoro TTS CLI shortcut`nfunction tts { python C:\Users\$env:USERNAME\kokoro-cli\kokoro-tts.py `$args }"
+
+# Reload profile
+. $PROFILE
+
+# Test it!
+tts --michael "Hello world"
+```
+
+#### Manual Setup
+
+**Step 1:** Create or open your PowerShell profile
+
+```powershell
+# Create if it doesn't exist
+if (!(Test-Path $PROFILE)) {
+    New-Item -Path $PROFILE -Type File -Force
+}
+
+# Open in notepad
 notepad $PROFILE
 ```
 
-If you get an error that the file doesn't exist, create it first:
+**Step 2:** Add this line (adjust path to your installation):
 
 ```powershell
-New-Item -Path $PROFILE -Type File -Force
-notepad $PROFILE
+# Kokoro TTS CLI shortcut
+function tts { python C:\Users\YourName\kokoro-cli\kokoro-tts.py $args }
 ```
 
-#### Step 2: Add the function
-
-Add this line (adjust the path to match your installation):
-
-```powershell
-function kokoro { python C:\Users\YourName\kokoro-cli\kokoro-tts.py $args }
-```
-
-#### Step 3: Reload your profile
+**Step 3:** Save and reload your profile
 
 ```powershell
 . $PROFILE
 ```
 
-Now you can use:
+#### Usage
+
+Now you can use `tts` from **any directory**:
 
 ```powershell
-kokoro --michael "This is easier"
+# From anywhere
+tts --michael "Hello world"
+
+# In your Downloads folder
+cd Downloads
+tts --fenrir --file .\story.txt
+
+# Quick test
+tts --bella "It's working perfectly!"
 ```
+
+The command works in all new PowerShell windows automatically!
 
 ## Output Files
 
@@ -248,10 +280,18 @@ All files are cached locally, so subsequent runs are much faster.
 
 ### Audio doesn't play automatically
 
-The file is still saved. You can:
+Make sure `sounddevice` is installed:
+
+```powershell
+pip install sounddevice
+```
+
+If it still doesn't work, the file is always saved. You can:
 - Double-click the WAV file in File Explorer
 - Open the folder: `explorer $HOME\kokoro-audio`
 - Play manually: Right-click → Open with → Windows Media Player
+
+**Note**: With `sounddevice`, audio plays directly in the terminal without opening any windows!
 
 ### Permission errors during installation
 

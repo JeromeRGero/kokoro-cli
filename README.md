@@ -28,7 +28,7 @@ cd kokoro-cli
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 # 3. Install core dependencies
-pip install soundfile huggingface_hub loguru transformers scipy
+pip install soundfile sounddevice huggingface_hub loguru transformers scipy
 
 # 4. Install spaCy (pre-built wheels available)
 pip install spacy
@@ -188,8 +188,10 @@ Files are 24kHz WAV format and can be replayed anytime.
 - Install one of these if audio doesn't auto-play
 
 ### Windows
-- Uses `os.startfile()` to open the default audio player
-- Files save to `kokoro-audio/` in your current directory
+- Audio plays directly in the terminal (no GUI windows!)
+- Uses `sounddevice` for seamless playback
+- Fallback to default player if sounddevice not installed
+- Files save to `C:\Users\YourName\kokoro-audio\`
 
 ## Command Options
 

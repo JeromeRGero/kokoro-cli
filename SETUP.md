@@ -128,7 +128,7 @@ python kokoro-tts.py --help
 1. Install Python 3.10-3.12 from [python.org](https://www.python.org/downloads/)
 2. Install dependencies:
    ```powershell
-   pip install kokoro soundfile
+   pip install kokoro soundfile sounddevice
    ```
 3. Download `kokoro-tts.py` from this repository
 4. Place it somewhere convenient (e.g., `C:\Users\YourName\kokoro-tts.py`)

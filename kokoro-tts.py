@@ -11,6 +11,12 @@ import os
 from datetime import datetime
 import platform
 
+try:
+    import sounddevice as sd
+    HAS_SOUNDDEVICE = True
+except ImportError:
+    HAS_SOUNDDEVICE = False
+
 def speak(text, voice='af_heart'):
     """Convert text to speech and play it"""
     pipeline = KPipeline(lang_code='a')  # 'a' = American English
@@ -60,7 +66,13 @@ def speak(text, voice='af_heart'):
                     continue
         elif system == 'Windows':
             print(f"▶️  Playing...")
-            os.startfile(output_path)
+            # Use sounddevice for in-terminal playback (no GUI window)
+            if HAS_SOUNDDEVICE:
+                sd.play(full_audio, 24000)
+                sd.wait()  # Wait for playback to finish
+            else:
+                # Fallback to opening default player (VLC, etc.)
+                os.startfile(output_path)
         else:
             print(f"⚠️  Auto-play not supported on {system}. File saved.")
     except Exception as e:
