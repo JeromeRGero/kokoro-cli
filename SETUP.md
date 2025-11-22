@@ -59,9 +59,73 @@ python kokoro-tts.py --help
    source ~/.zshrc
    ```
 
-### Windows
+### Windows (Python 3.13+)
 
-1. Install Python 3.7+ from [python.org](https://www.python.org/downloads/)
+**Important**: Python 3.13+ requires installation from source due to dependency compatibility. Follow these steps:
+
+1. **Install Python 3.13+** from [python.org](https://www.python.org/downloads/)
+   - Make sure to check "Add Python to PATH" during installation
+
+2. **Open PowerShell** and navigate to where you want to install
+
+3. **Clone this repository**:
+   ```powershell
+   git clone https://github.com/JeromeRGero/kokoro-cli.git
+   cd kokoro-cli
+   ```
+
+4. **Install PyTorch** (with CUDA for GPU acceleration):
+   ```powershell
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   ```
+   This will download ~2.8 GB. Be patient!
+
+5. **Install core dependencies**:
+   ```powershell
+   pip install soundfile huggingface_hub loguru transformers scipy
+   ```
+
+6. **Install spaCy** (NLP processing):
+   ```powershell
+   pip install spacy
+   ```
+
+7. **Create a constraints file** (prevents version conflicts):
+   ```powershell
+   echo spacy==3.8.11 > constraints.txt
+   echo thinc==8.3.10 >> constraints.txt
+   echo blis==1.3.3 >> constraints.txt
+   ```
+
+8. **Install misaki from GitHub** (text-to-phoneme conversion):
+   ```powershell
+   pip install git+https://github.com/hexgrad/misaki.git -c constraints.txt
+   ```
+
+9. **Clone and install kokoro**:
+   ```powershell
+   cd ..
+   git clone https://github.com/hexgrad/kokoro.git
+   pip install .\kokoro -c kokoro-cli\constraints.txt
+   ```
+
+10. **Clean up and test**:
+    ```powershell
+    del kokoro-cli\constraints.txt
+    cd kokoro-cli
+    python kokoro-tts.py --michael "Hello world"
+    ```
+
+**Why these steps?**
+- PyPI versions of kokoro don't support Python 3.13 yet
+- GitHub source versions support Python 3.13
+- Constraints prevent spaCy from upgrading to dev versions that fail to build on Windows
+
+**Windows Note**: Audio will auto-play using your default audio player. Files are saved to `C:\Users\YourName\kokoro-audio\`
+
+### Windows (Python 3.12 and below)
+
+1. Install Python 3.10-3.12 from [python.org](https://www.python.org/downloads/)
 2. Install dependencies:
    ```powershell
    pip install kokoro soundfile
@@ -69,8 +133,6 @@ python kokoro-tts.py --help
 3. Download `kokoro-tts.py` from this repository
 4. Place it somewhere convenient (e.g., `C:\Users\YourName\kokoro-tts.py`)
 5. Run with: `python kokoro-tts.py [options]`
-
-**Windows Note**: Audio will auto-play using your default audio player. Files are saved to `kokoro-audio/` in your current directory.
 
 ## File Locations
 

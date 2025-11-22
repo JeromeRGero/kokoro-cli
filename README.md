@@ -15,6 +15,47 @@ A simple command-line interface for [Kokoro-82M](https://github.com/hexgrad/koko
 
 ### Installation
 
+#### Windows (Recommended for Python 3.13+)
+
+**Important**: If you're using Python 3.13+, follow these steps for a working installation:
+
+```powershell
+# 1. Clone or download this repository
+git clone https://github.com/JeromeRGero/kokoro-cli.git
+cd kokoro-cli
+
+# 2. Install PyTorch first (with CUDA support for GPU acceleration)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# 3. Install core dependencies
+pip install soundfile huggingface_hub loguru transformers scipy
+
+# 4. Install spaCy (pre-built wheels available)
+pip install spacy
+
+# 5. Create a constraints file to prevent spaCy upgrade issues
+echo spacy==3.8.11 > constraints.txt
+echo thinc==8.3.10 >> constraints.txt
+echo blis==1.3.3 >> constraints.txt
+
+# 6. Install misaki from GitHub (latest version not on PyPI)
+pip install git+https://github.com/hexgrad/misaki.git -c constraints.txt
+
+# 7. Clone and install kokoro from source
+cd ..
+git clone https://github.com/hexgrad/kokoro.git
+pip install .\kokoro -c kokoro-cli\constraints.txt
+
+# 8. Clean up constraints file
+del kokoro-cli\constraints.txt
+
+# 9. Test the installation
+cd kokoro-cli
+python kokoro-tts.py --michael "Hello world"
+```
+
+#### Windows (Python 3.12 and below) / macOS / Linux
+
 ```bash
 # Install dependencies
 pip install kokoro soundfile
@@ -22,7 +63,7 @@ pip install kokoro soundfile
 # Download the script
 curl -O https://raw.githubusercontent.com/JeromeRGero/kokoro-cli/main/kokoro-tts.py
 
-# Make it executable (macOS/Linux)
+# Make it executable (macOS/Linux only)
 chmod +x kokoro-tts.py
 ```
 
@@ -109,11 +150,23 @@ Now you can just use: `kokoro --michael "text"`
 
 ### Windows
 
+**Option 1: PowerShell Function (Recommended)**
+
+Add this to your PowerShell profile (`$PROFILE`):
+
+```powershell
+function kokoro { python C:\path\to\kokoro-cli\kokoro-tts.py $args }
+```
+
+Then use: `kokoro --michael "Hello world"`
+
+**Option 2: Batch File**
+
 Create a batch file `kokoro.bat` in a folder that's in your PATH:
 
 ```batch
 @echo off
-python "%USERPROFILE%\kokoro-tts.py" %*
+python "C:\path\to\kokoro-cli\kokoro-tts.py" %*
 ```
 
 ## Output
@@ -176,11 +229,29 @@ Voice Shortcuts:
 
 ## Troubleshooting
 
+### Windows: Build errors during installation (blis, spaCy)
+
+If you get compilation errors on Windows, especially with Python 3.13+:
+1. Use the Windows-specific installation steps above
+2. Install from GitHub sources instead of PyPI
+3. Use constraints to prevent spaCy from upgrading to dev versions
+
 ### "ModuleNotFoundError: No module named 'kokoro'"
 
 Install the dependencies:
 ```bash
+# Python 3.12 and below
 pip install kokoro soundfile
+
+# Python 3.13+ (Windows)
+# Follow the full Windows installation steps above
+```
+
+### "TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'"
+
+This means your misaki version is outdated. Install the latest from GitHub:
+```bash
+pip install git+https://github.com/hexgrad/misaki.git
 ```
 
 ### Audio doesn't play
@@ -188,14 +259,23 @@ pip install kokoro soundfile
 The file is still saved. Play it manually:
 - **macOS**: `afplay ~/kokoro-audio/kokoro_*.wav`
 - **Linux**: `mpv ~/kokoro-audio/kokoro_*.wav`
-- **Windows**: Double-click the file in File Explorer
+- **Windows**: Double-click the file in File Explorer or `explorer kokoro-audio`
 
 ### "command not found: kokoro"
 
 Either:
 1. Set up the global command (see instructions above)
-2. Use `python3 kokoro-tts.py` instead
+2. Use `python3 kokoro-tts.py` (or `python` on Windows) instead
 3. Restart your terminal after setup
+
+### First run is slow / downloads files
+
+This is normal! The first run downloads:
+- Kokoro TTS model (~327 MB) - one time only
+- Voice files (~523 KB each) - cached after first use
+- spaCy language model (~12 MB) - one time only
+
+Subsequent runs will be much faster.
 
 ## Credits
 
