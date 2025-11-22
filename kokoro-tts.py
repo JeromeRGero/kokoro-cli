@@ -31,15 +31,22 @@ def speak(text, voice='af_heart'):
     output_path = os.path.join(output_dir, filename)
     
     print(f"🗣️  Speaking: {text[:50]}...")
-    print(f"🎵  Generating audio segments...")
+    print(f"🎵  Generating audio segments... (Press Ctrl+C to stop)")
     
     # Generate audio - collect all segments
     generator = pipeline(text, voice=voice)
     all_audio = []
     
-    for i, (gs, ps, audio) in enumerate(generator):
-        print(f"   Segment {i+1}...")
-        all_audio.append(audio)
+    try:
+        for i, (gs, ps, audio) in enumerate(generator):
+            print(f"   Segment {i+1}...")
+            all_audio.append(audio)
+    except KeyboardInterrupt:
+        print(f"\n⏹️  Stopped by user. Processed {len(all_audio)} segments.")
+        if len(all_audio) == 0:
+            print("No audio generated.")
+            sys.exit(0)
+        # Continue to save what we have
     
     # Concatenate all segments
     import numpy as np
@@ -53,10 +60,10 @@ def speak(text, voice='af_heart'):
     system = platform.system()
     try:
         if system == 'Darwin':  # macOS
-            print(f"▶️  Playing...")
+            print(f"▶️  Playing... (Press Ctrl+C to stop)")
             subprocess.run(['afplay', output_path], check=True)
         elif system == 'Linux':
-            print(f"▶️  Playing...")
+            print(f"▶️  Playing... (Press Ctrl+C to stop)")
             # Try common Linux audio players
             for player in ['paplay', 'aplay', 'ffplay', 'mpv']:
                 try:
@@ -65,16 +72,24 @@ def speak(text, voice='af_heart'):
                 except (subprocess.CalledProcessError, FileNotFoundError):
                     continue
         elif system == 'Windows':
-            print(f"▶️  Playing...")
+            print(f"▶️  Playing... (Press Ctrl+C to stop)")
             # Use sounddevice for in-terminal playback (no GUI window)
             if HAS_SOUNDDEVICE:
+                import time
                 sd.play(full_audio, 24000)
-                sd.wait()  # Wait for playback to finish
+                # Check for Ctrl+C while playing
+                while sd.get_stream().active:
+                    time.sleep(0.1)  # Check every 100ms
             else:
                 # Fallback to opening default player (VLC, etc.)
                 os.startfile(output_path)
         else:
             print(f"⚠️  Auto-play not supported on {system}. File saved.")
+    except KeyboardInterrupt:
+        print(f"\n⏹️  Playback stopped by user.")
+        # Stop playback if using sounddevice
+        if system == 'Windows' and HAS_SOUNDDEVICE:
+            sd.stop()
     except Exception as e:
         print(f"⚠️  Could not auto-play audio: {e}")
     
