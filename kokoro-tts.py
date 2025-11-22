@@ -146,11 +146,24 @@ if __name__ == '__main__':
     
     # Get text from file or command line
     if filename:
-        try:
-            with open(os.path.expanduser(filename), 'r') as f:
-                text = f.read()
-        except Exception as e:
-            print(f"Error reading file: {e}")
+        # Try multiple encodings to handle different file types
+        encodings = ['utf-8', 'utf-8-sig', 'latin-1', 'cp1252', 'iso-8859-1']
+        text = None
+        last_error = None
+        
+        for encoding in encodings:
+            try:
+                with open(os.path.expanduser(filename), 'r', encoding=encoding) as f:
+                    text = f.read()
+                break  # Success! Exit the loop
+            except (UnicodeDecodeError, LookupError) as e:
+                last_error = e
+                continue  # Try next encoding
+        
+        if text is None:
+            print(f"Error reading file: Could not decode file with any standard encoding.")
+            print(f"Last error: {last_error}")
+            print(f"Tried encodings: {', '.join(encodings)}")
             sys.exit(1)
     else:
         text = ' '.join(args)
